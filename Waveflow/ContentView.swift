@@ -85,12 +85,79 @@ struct ContentView: View {
                 .padding(.horizontal)
                 .padding(.top, 24)
                 
+                VStack(spacing: 12) {
+                    HStack(spacing: 12) {
+                        WeatherDetailCard(
+                            title: "Visibility",
+                            value: viewModel.weatherData.visibility,
+                            iconName: "eye.fill",
+                            textColor: viewModel.textColor
+                        )
+                        WeatherDetailCard(
+                            title: "Humidity",
+                            value: viewModel.weatherData.humidity,
+                            iconName: "humidity.fill",
+                            textColor: viewModel.textColor
+                        )
+                    }
+                    
+                    HStack(spacing: 12) {
+                        WeatherDetailCard(
+                            title: "Feels Like",
+                            value: viewModel.weatherData.feelsLike,
+                            iconName: "thermometer.medium",
+                            textColor: viewModel.textColor
+                        )
+                        WeatherDetailCard(
+                            title: "Pressure",
+                            value: viewModel.weatherData.pressure,
+                            iconName: "gauge.with.needle",
+                            textColor: viewModel.textColor
+                        )
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.top, 16)
+                
                 Spacer()
             }
         }
     }
 }
 
+struct WeatherDetailCard: View {
+    let title: String
+    let value: String
+    let iconName: String
+    let textColor: Color
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 4) {
+                Image(systemName: iconName)
+                    .font(.caption)
+                Text(title.uppercased())
+                    .font(.caption2)
+                    .fontWeight(.semibold)
+            }
+            .foregroundColor(textColor.opacity(0.7))
+            
+            Text(value)
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundColor(textColor)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .background(textColor == .black ? Color.white.opacity(0.2) : Color.black.opacity(0.3))
+        .cornerRadius(15)
+    }
+}
+
 #Preview {
-    ContentView(viewModel: WeatherViewModel(weatherService: MockWeatherService()))
+    ContentView(
+        viewModel: WeatherViewModel(
+            weatherService: MockWeatherService()
+        )
+    )
 }
