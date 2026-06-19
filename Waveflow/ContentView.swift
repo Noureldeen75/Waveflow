@@ -44,6 +44,47 @@ struct ContentView: View {
                 }
                 .padding(.top, 40)
                 
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "calendar")
+                        Text("3-DAY FORECAST")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                    }
+                    .foregroundColor(viewModel.textColor.opacity(0.7))
+                    
+                    Divider()
+                        .background(viewModel.textColor.opacity(0.3))
+                    
+                    ForEach(viewModel.weatherData.forecast) { day in
+                        HStack {
+                            Text(day.dayName)
+                                .frame(width: 120, alignment: .leading)
+                                .font(.body)
+                                .fontWeight(.medium)
+                            
+                            Spacer()
+                            
+                            Image(systemName: day.conditionIconName)
+                                .font(.title3)
+                            
+                            Spacer()
+                            
+                            Text("\(Int(day.minTemp))° - \(Int(day.maxTemp))°")
+                                .frame(width: 80, alignment: .trailing)
+                                .font(.body)
+                                .fontWeight(.medium)
+                        }
+                        .foregroundColor(viewModel.textColor)
+                        .padding(.vertical, 4)
+                    }
+                }
+                .padding()
+                .background(viewModel.textColor == .black ? Color.white.opacity(0.2) : Color.black.opacity(0.3))
+                .cornerRadius(15)
+                .padding(.horizontal)
+                .padding(.top, 24)
+                
                 Spacer()
             }
         }
