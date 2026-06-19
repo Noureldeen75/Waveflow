@@ -9,9 +9,11 @@ import SwiftUI
 
 @main
 struct WaveflowApp: App {
+    private let viewModel = WeatherViewModel(weatherService: MockWeatherService())
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(viewModel: viewModel)
         }
     }
 }
