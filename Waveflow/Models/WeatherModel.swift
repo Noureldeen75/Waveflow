@@ -7,7 +7,8 @@
 
 import Foundation
 
-struct WeatherData {
+struct WeatherData: Identifiable {
+    let id = UUID()
     let locationName: String
     let currentTemp: Double
     let conditionText: String
@@ -29,4 +30,12 @@ struct ForecastDay: Identifiable {
     let conditionIconName: String
     let minTemp: Double
     let maxTemp: Double
+    let hourly: [HourlyForecast]
+}
+
+struct HourlyForecast: Identifiable {
+    let id = UUID()
+    let time: String
+    let conditionIconName: String
+    let temp: Double
 }
