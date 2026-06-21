@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     @ObservedObject var viewModel: WeatherViewModel
+    @State private var isShowingSavedLocations = false
     
     var body: some View {
         NavigationView {
@@ -17,7 +18,10 @@ struct ContentView: View {
                     WeatherDetailView(
                         weatherData: viewModel.savedLocations[index],
                         backgroundImageName: viewModel.backgroundImageName,
-                        textColor: viewModel.textColor
+                        textColor: viewModel.textColor,
+                        onListTapped: {
+                            isShowingSavedLocations = true
+                        }
                     )
                     .tag(index)
                 }
@@ -25,6 +29,9 @@ struct ContentView: View {
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
             .ignoresSafeArea()
             .navigationBarHidden(true)
+            .sheet(isPresented: $isShowingSavedLocations) {
+                SavedLocationsView(viewModel: viewModel)
+            }
         }
     }
 }
@@ -33,6 +40,7 @@ struct WeatherDetailView: View {
     let weatherData: WeatherData
     let backgroundImageName: String
     let textColor: Color
+    let onListTapped: () -> Void
     
     var body: some View {
         ZStack {
@@ -42,6 +50,17 @@ struct WeatherDetailView: View {
                 .ignoresSafeArea()
             
             VStack {
+                HStack {
+                    Spacer()
+                    Button(action: onListTapped) {
+                        Image(systemName: "list.bullet")
+                            .font(.title2)
+                            .foregroundColor(textColor)
+                    }
+                    .padding(.trailing, 20)
+                }
+                .padding(.top, 10)
+                
                 VStack(spacing: 8) {
                     Text(weatherData.locationName)
                         .font(.system(size: 34, weight: .medium))
