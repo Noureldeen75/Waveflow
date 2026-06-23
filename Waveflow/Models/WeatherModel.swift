@@ -87,7 +87,7 @@ struct HourlyForecast: Identifiable {
     let temp: Double
 }
 
-struct CityEntry: Codable, Identifiable {
+struct CountryEntry: Codable, Identifiable {
     var id: String { name }
     let name: String
     let query: String

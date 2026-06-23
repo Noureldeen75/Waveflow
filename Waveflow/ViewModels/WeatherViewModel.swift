@@ -12,14 +12,14 @@ class WeatherViewModel: ObservableObject {
     @Published var selectedLocationIndex: Int = 0
     @Published var isLoading: Bool = true
     @Published var searchQuery: String = ""
-    @Published var filteredCities: [CityEntry] = []
-    @Published var allCities: [CityEntry] = []
+    @Published var filteredCountries: [CountryEntry] = []
+    @Published var allCountries: [CountryEntry] = []
     
     private let weatherService: WeatherServiceProtocol
     
     init(weatherService: WeatherServiceProtocol) {
         self.weatherService = weatherService
-        loadCities()
+        loadCountries()
         fetchDefaultLocation()
     }
     
@@ -41,9 +41,9 @@ class WeatherViewModel: ObservableObject {
         }
     }
     
-    func loadCities() {
+    func loadCountries() {
         guard let url = Bundle.main.url(
-            forResource: "egypt_cities",
+            forResource: "countries",
             withExtension: "json"
         ) else {
             return
@@ -51,13 +51,13 @@ class WeatherViewModel: ObservableObject {
         
         do {
             let data = try Data(contentsOf: url)
-            let cities = try JSONDecoder().decode(
-                [CityEntry].self,
+            let countries = try JSONDecoder().decode(
+                [CountryEntry].self,
                 from: data
             )
-            self.allCities = cities
+            self.allCountries = countries
         } catch {
-            print("Error loading cities: \(error)")
+            print("Error loading countries: \(error)")
         }
     }
     
@@ -74,29 +74,29 @@ class WeatherViewModel: ObservableObject {
         }
     }
     
-    func filterCities() {
+    func filterCountries() {
         let query = searchQuery.trimmingCharacters(
             in: .whitespacesAndNewlines
         ).lowercased()
         
         guard !query.isEmpty else {
-            filteredCities = allCities
+            filteredCountries = allCountries
             return
         }
         
-        filteredCities = allCities.filter {
+        filteredCountries = allCountries.filter {
             $0.name.lowercased().contains(query)
         }
     }
     
-    func addLocation(city: CityEntry) {
+    func addLocation(country: CountryEntry) {
         let alreadyExists = savedLocations.contains {
-            $0.locationName.lowercased() == city.name.lowercased()
+            $0.locationName.lowercased() == country.name.lowercased()
         }
         
         guard !alreadyExists else { return }
         
-        weatherService.fetchWeather(for: city.query) { [weak self] weatherData in
+        weatherService.fetchWeather(for: country.query) { [weak self] weatherData in
             guard let self = self, let weatherData = weatherData else {
                 return
             }

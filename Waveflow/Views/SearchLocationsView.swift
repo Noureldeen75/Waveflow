@@ -25,12 +25,12 @@ struct SearchLocationsView: View {
                             .foregroundColor(viewModel.textColor.opacity(0.6))
                         
                         TextField(
-                            "Search Egyptian Cities",
+                            "Search Countries",
                             text: $viewModel.searchQuery
                         )
                         .foregroundColor(viewModel.textColor)
                         .onChange(of: viewModel.searchQuery) { _ in
-                            viewModel.filterCities()
+                            viewModel.filterCountries()
                         }
                     }
                     .padding(10)
@@ -40,14 +40,14 @@ struct SearchLocationsView: View {
                     .padding(.top, 10)
                     
                     List {
-                        ForEach(viewModel.filteredCities) { city in
+                        ForEach(viewModel.filteredCountries) { country in
                             Button(action: {
-                                viewModel.addLocation(city: city)
+                                viewModel.addLocation(country: country)
                                 viewModel.searchQuery = ""
                                 dismiss()
                             }) {
                                 HStack {
-                                    Text(city.name)
+                                    Text(country.name)
                                         .font(.headline)
                                         .foregroundColor(viewModel.textColor)
                                     Spacer()
@@ -62,7 +62,7 @@ struct SearchLocationsView: View {
                     .background(Color.clear)
                 }
             }
-            .navigationTitle("Search Cities")
+            .navigationTitle("Search Countries")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -74,7 +74,7 @@ struct SearchLocationsView: View {
                 }
             }
             .onAppear {
-                viewModel.filterCities()
+                viewModel.filterCountries()
             }
         }
     }
