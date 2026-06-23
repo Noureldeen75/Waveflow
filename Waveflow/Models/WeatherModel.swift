@@ -7,6 +7,59 @@
 
 import Foundation
 
+// MARK: - API Response Models
+
+struct APIWeatherResponse: Codable {
+    let location: APILocation
+    let current: APICurrent
+    let forecast: APIForecast
+}
+
+struct APILocation: Codable {
+    let name: String
+    let region: String
+    let country: String
+}
+
+struct APICurrent: Codable {
+    let temp_c: Double
+    let condition: APICondition
+    let humidity: Int
+    let feelslike_c: Double
+    let vis_km: Double
+    let pressure_mb: Double
+}
+
+struct APICondition: Codable {
+    let text: String
+    let icon: String
+    let code: Int
+}
+
+struct APIForecast: Codable {
+    let forecastday: [APIForecastDay]
+}
+
+struct APIForecastDay: Codable {
+    let date: String
+    let day: APIDayInfo
+    let hour: [APIHour]
+}
+
+struct APIDayInfo: Codable {
+    let maxtemp_c: Double
+    let mintemp_c: Double
+    let condition: APICondition
+}
+
+struct APIHour: Codable {
+    let time: String
+    let temp_c: Double
+    let condition: APICondition
+}
+
+// MARK: - App Display Models
+
 struct WeatherData: Identifiable {
     let id = UUID()
     let locationName: String
@@ -15,9 +68,7 @@ struct WeatherData: Identifiable {
     let conditionIconName: String
     let maxTempToday: Double
     let minTempToday: Double
-    
     let forecast: [ForecastDay]
-    
     let visibility: String
     let humidity: String
     let feelsLike: String
@@ -38,4 +89,12 @@ struct HourlyForecast: Identifiable {
     let time: String
     let conditionIconName: String
     let temp: Double
+}
+
+// MARK: - City Entry (for local JSON)
+
+struct CityEntry: Codable, Identifiable {
+    var id: String { name }
+    let name: String
+    let query: String
 }
