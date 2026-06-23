@@ -10,33 +10,17 @@ import SwiftUI
 class WeatherViewModel: ObservableObject {
     @Published var savedLocations: [WeatherData] = []
     @Published var selectedLocationIndex: Int = 0
+    @Published var isLoading: Bool = true
     @Published var searchQuery: String = ""
-    @Published var searchResults: [WeatherData] = []
+    @Published var filteredCities: [CityEntry] = []
+    @Published var allCities: [CityEntry] = []
     
     private let weatherService: WeatherServiceProtocol
     
     init(weatherService: WeatherServiceProtocol) {
         self.weatherService = weatherService
-        self.savedLocations = weatherService.fetchDefaultLocations()
-    }
-    
-    var activeWeatherData: WeatherData {
-        if selectedLocationIndex >= 0 && selectedLocationIndex < savedLocations.count {
-            return savedLocations[selectedLocationIndex]
-        }
-        return WeatherData(
-            locationName: "No Location",
-            currentTemp: 0,
-            conditionText: "Unknown",
-            conditionIconName: "questionmark.circle",
-            maxTempToday: 0,
-            minTempToday: 0,
-            forecast: [],
-            visibility: "N/A",
-            humidity: "N/A",
-            feelsLike: "N/A",
-            pressure: "N/A"
-        )
+        loadCities()
+        fetchDefaultLocation()
     }
     
     var backgroundImageName: String {
@@ -57,35 +41,91 @@ class WeatherViewModel: ObservableObject {
         }
     }
     
-    func performSearch() {
-        guard !searchQuery.isEmpty else {
-            searchResults = []
+    // MARK: - Load Cities from JSON
+    
+    func loadCities() {
+        guard let url = Bundle.main.url(
+            forResource: "egypt_cities",
+            withExtension: "json"
+        ) else {
             return
         }
         
-        let query = searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        let matchingCities = ["cairo", "london", "tokyo", "paris", "new york"]
-        
-        if matchingCities.contains(query) {
-            let data = weatherService.fetchWeatherData(for: query)
-            searchResults = [data]
-        } else {
-            searchResults = []
+        do {
+            let data = try Data(contentsOf: url)
+            let cities = try JSONDecoder().decode(
+                [CityEntry].self,
+                from: data
+            )
+            self.allCities = cities
+        } catch {
+            print("Error loading cities: \(error)")
         }
     }
     
-    func addLocationToSaved(_ weatherData: WeatherData) {
-        let exists = savedLocations.contains { location in
-            location.locationName.lowercased() == weatherData.locationName.lowercased()
-        }
-        
-        if !exists {
-            savedLocations.append(weatherData)
-            selectedLocationIndex = savedLocations.count - 1
-        } else if let index = savedLocations.firstIndex(where: { $0.locationName.lowercased() == weatherData.locationName.lowercased() }) {
-            selectedLocationIndex = index
+    // MARK: - Fetch Default Location (Cairo)
+    
+    func fetchDefaultLocation() {
+        isLoading = true
+        weatherService.fetchWeather(for: "Cairo") { [weak self] weatherData in
+            guard let self = self, let weatherData = weatherData else {
+                self?.isLoading = false
+                return
+            }
+            self.savedLocations = [weatherData]
+            self.selectedLocationIndex = 0
+            self.isLoading = false
         }
     }
+    
+    // MARK: - Search Filtering
+    
+    func filterCities() {
+        let query = searchQuery.trimmingCharacters(
+            in: .whitespacesAndNewlines
+        ).lowercased()
+        
+        guard !query.isEmpty else {
+            filteredCities = allCities
+            return
+        }
+        
+        filteredCities = allCities.filter {
+            $0.name.lowercased().contains(query)
+        }
+    }
+    
+    // MARK: - Add Location
+    
+    func addLocation(city: CityEntry) {
+        let alreadyExists = savedLocations.contains {
+            $0.locationName.lowercased() == city.name.lowercased()
+        }
+        
+        guard !alreadyExists else { return }
+        
+        weatherService.fetchWeather(for: city.query) { [weak self] weatherData in
+            guard let self = self, let weatherData = weatherData else {
+                return
+            }
+            self.savedLocations.append(weatherData)
+            self.selectedLocationIndex = self.savedLocations.count - 1
+        }
+    }
+    
+    // MARK: - Remove Location
+    
+    func removeLocation(at index: Int) {
+        guard index > 0 && index < savedLocations.count else { return }
+        
+        savedLocations.remove(at: index)
+        
+        if selectedLocationIndex >= savedLocations.count {
+            selectedLocationIndex = savedLocations.count - 1
+        }
+    }
+    
+    // MARK: - Select Location
     
     func selectLocation(at index: Int) {
         if index >= 0 && index < savedLocations.count {
