@@ -8,199 +8,128 @@
 import Foundation
 
 protocol WeatherServiceProtocol {
-    func fetchWeatherData(for locationName: String) -> WeatherData
-    func fetchDefaultLocations() -> [WeatherData]
+    func fetchWeather(
+        for query: String,
+        completion: @escaping (WeatherData?) -> Void
+    )
 }
 
-class MockWeatherService: WeatherServiceProtocol {
-    func fetchWeatherData(for locationName: String) -> WeatherData {
-        let hourlyToday = [
-            HourlyForecast(
-                time: "Now",
-                conditionIconName: "sun.max.fill",
-                temp: 25
-            ),
-            HourlyForecast(
-                time: "6 PM",
-                conditionIconName: "cloud.sun.fill",
-                temp: 23
-            ),
-            HourlyForecast(
-                time: "7 PM",
-                conditionIconName: "cloud.fill",
-                temp: 21
-            ),
-            HourlyForecast(
-                time: "8 PM",
-                conditionIconName: "cloud.fill",
-                temp: 20
-            ),
-            HourlyForecast(
-                time: "9 PM",
-                conditionIconName: "cloud.fill",
-                temp: 19
-            )
-        ]
+class WeatherService: WeatherServiceProtocol {
+    private let apiKey = "afad2da22c6947078c7131923262306"
+    private let baseURL = "http://api.weatherapi.com/v1/forecast.json"
+    
+    func fetchWeather(
+        for query: String,
+        completion: @escaping (WeatherData?) -> Void
+    ) {
+        let encodedQuery = query.addingPercentEncoding(
+            withAllowedCharacters: .urlQueryAllowed
+        ) ?? query
         
-        let hourlyTomorrow = [
-            HourlyForecast(
-                time: "12 AM",
-                conditionIconName: "cloud.fill",
-                temp: 18
-            ),
-            HourlyForecast(
-                time: "6 AM",
-                conditionIconName: "sun.max.fill",
-                temp: 22
-            ),
-            HourlyForecast(
-                time: "12 PM",
-                conditionIconName: "sun.max.fill",
-                temp: 28
-            ),
-            HourlyForecast(
-                time: "6 PM",
-                conditionIconName: "cloud.sun.fill",
-                temp: 25
-            ),
-            HourlyForecast(
-                time: "9 PM",
-                conditionIconName: "cloud.fill",
-                temp: 22
-            )
-        ]
+        let urlString = "\(baseURL)?key=\(apiKey)&q=\(encodedQuery)&days=3&aqi=yes&alerts=no"
         
-        let hourlyAfterTomorrow = [
-            HourlyForecast(
-                time: "12 AM",
-                conditionIconName: "cloud.fill",
-                temp: 17
-            ),
-            HourlyForecast(
-                time: "6 AM",
-                conditionIconName: "cloud.sun.fill",
-                temp: 20
-            ),
-            HourlyForecast(
-                time: "12 PM",
-                conditionIconName: "cloud.fill",
-                temp: 24
-            ),
-            HourlyForecast(
-                time: "6 PM",
-                conditionIconName: "cloud.fill",
-                temp: 22
-            ),
-            HourlyForecast(
-                time: "9 PM",
-                conditionIconName: "cloud.fill",
-                temp: 19
-            )
-        ]
-        
-        let forecastDays = [
-            ForecastDay(
-                dayName: "Today",
-                conditionIconName: "sun.max.fill",
-                minTemp: 20,
-                maxTemp: 30,
-                hourly: hourlyToday
-            ),
-            ForecastDay(
-                dayName: "Tomorrow",
-                conditionIconName: "cloud.sun.fill",
-                minTemp: 18,
-                maxTemp: 28,
-                hourly: hourlyTomorrow
-            ),
-            ForecastDay(
-                dayName: "After Tomorrow",
-                conditionIconName: "cloud.fill",
-                minTemp: 17,
-                maxTemp: 26,
-                hourly: hourlyAfterTomorrow
-            )
-        ]
-        
-        switch locationName.lowercased() {
-        case "london":
-            return WeatherData(
-                locationName: "London",
-                currentTemp: 18,
-                conditionText: "Rainy",
-                conditionIconName: "cloud.rain.fill",
-                maxTempToday: 22,
-                minTempToday: 15,
-                forecast: forecastDays,
-                visibility: "8 km",
-                humidity: "80%",
-                feelsLike: "17°C",
-                pressure: "1008 hPa"
-            )
-        case "tokyo":
-            return WeatherData(
-                locationName: "Tokyo",
-                currentTemp: 22,
-                conditionText: "Cloudy",
-                conditionIconName: "cloud.fill",
-                maxTempToday: 26,
-                minTempToday: 18,
-                forecast: forecastDays,
-                visibility: "9 km",
-                humidity: "70%",
-                feelsLike: "23°C",
-                pressure: "1010 hPa"
-            )
-        case "paris":
-            return WeatherData(
-                locationName: "Paris",
-                currentTemp: 20,
-                conditionText: "Partly Cloudy",
-                conditionIconName: "cloud.sun.fill",
-                maxTempToday: 25,
-                minTempToday: 16,
-                forecast: forecastDays,
-                visibility: "10 km",
-                humidity: "65%",
-                feelsLike: "21°C",
-                pressure: "1011 hPa"
-            )
-        case "new york":
-            return WeatherData(
-                locationName: "New York",
-                currentTemp: 24,
-                conditionText: "Sunny",
-                conditionIconName: "sun.max.fill",
-                maxTempToday: 29,
-                minTempToday: 19,
-                forecast: forecastDays,
-                visibility: "10 km",
-                humidity: "55%",
-                feelsLike: "25°C",
-                pressure: "1013 hPa"
-            )
-        default:
-            return WeatherData(
-                locationName: "Cairo",
-                currentTemp: 25,
-                conditionText: "Sunny",
-                conditionIconName: "sun.max.fill",
-                maxTempToday: 30,
-                minTempToday: 20,
-                forecast: forecastDays,
-                visibility: "10 km",
-                humidity: "60%",
-                feelsLike: "27°C",
-                pressure: "1012 hPa"
-            )
+        guard let url = URL(string: urlString) else {
+            completion(nil)
+            return
         }
+        
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            guard let data = data, error == nil else {
+                DispatchQueue.main.async { completion(nil) }
+                return
+            }
+            
+            do {
+                let apiResponse = try JSONDecoder().decode(
+                    APIWeatherResponse.self,
+                    from: data
+                )
+                let weatherData = self.mapToWeatherData(apiResponse)
+                DispatchQueue.main.async { completion(weatherData) }
+            } catch {
+                print("Decoding error: \(error)")
+                DispatchQueue.main.async { completion(nil) }
+            }
+        }.resume()
     }
     
-    func fetchDefaultLocations() -> [WeatherData] {
-        return [
-            fetchWeatherData(for: "Cairo"),
-            fetchWeatherData(for: "London"),
-            fetchWeatherData(for: "Tokyo")
-        ]
+    private func mapToWeatherData(_ response: APIWeatherResponse) -> WeatherData {
+        let forecastDays = response.forecast.forecastday.enumerated().map { index, day in
+            let dayName: String
+            switch index {
+            case 0: dayName = "Today"
+            case 1: dayName = "Tomorrow"
+            default: dayName = "After Tomorrow"
+            }
+            
+            let hourlyItems = day.hour.map { hour in
+                let timeString = formatHourTime(hour.time)
+                return HourlyForecast(
+                    time: timeString,
+                    conditionIconName: mapConditionToSFSymbol(hour.condition.code),
+                    temp: hour.temp_c
+                )
+            }
+            
+            return ForecastDay(
+                dayName: dayName,
+                conditionIconName: mapConditionToSFSymbol(day.day.condition.code),
+                minTemp: day.day.mintemp_c,
+                maxTemp: day.day.maxtemp_c,
+                hourly: hourlyItems
+            )
+        }
+        
+        let todayForecast = response.forecast.forecastday.first
+        
+        return WeatherData(
+            locationName: response.location.name,
+            currentTemp: response.current.temp_c,
+            conditionText: response.current.condition.text,
+            conditionIconName: mapConditionToSFSymbol(response.current.condition.code),
+            maxTempToday: todayForecast?.day.maxtemp_c ?? 0,
+            minTempToday: todayForecast?.day.mintemp_c ?? 0,
+            forecast: forecastDays,
+            visibility: "\(response.current.vis_km) km",
+            humidity: "\(response.current.humidity)%",
+            feelsLike: "\(Int(response.current.feelslike_c))°C",
+            pressure: "\(Int(response.current.pressure_mb)) hPa"
+        )
+    }
+    
+    private func formatHourTime(_ timeString: String) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm"
+        guard let date = formatter.date(from: timeString) else { return timeString }
+        
+        let outputFormatter = DateFormatter()
+        outputFormatter.dateFormat = "h a"
+        return outputFormatter.string(from: date)
+    }
+    
+    private func mapConditionToSFSymbol(_ code: Int) -> String {
+        switch code {
+        case 1000: return "sun.max.fill"
+        case 1003: return "cloud.sun.fill"
+        case 1006: return "cloud.fill"
+        case 1009: return "smoke.fill"
+        case 1030, 1135, 1147: return "cloud.fog.fill"
+        case 1063, 1150, 1153, 1180, 1183: return "cloud.drizzle.fill"
+        case 1066, 1210, 1213: return "cloud.snow.fill"
+        case 1069, 1204, 1207, 1249, 1252: return "cloud.sleet.fill"
+        case 1072, 1168, 1171: return "cloud.hail.fill"
+        case 1087: return "cloud.bolt.fill"
+        case 1114, 1117: return "wind.snow"
+        case 1186, 1189: return "cloud.rain.fill"
+        case 1192, 1195, 1243, 1246: return "cloud.heavyrain.fill"
+        case 1198, 1201: return "cloud.rain.fill"
+        case 1216, 1219, 1222, 1225, 1255, 1258: return "cloud.snow.fill"
+        case 1237, 1261, 1264: return "cloud.hail.fill"
+        case 1240: return "cloud.rain.fill"
+        case 1273: return "cloud.bolt.rain.fill"
+        case 1276: return "cloud.bolt.rain.fill"
+        case 1279, 1282: return "cloud.bolt.fill"
+        default: return "cloud.fill"
+        }
     }
 }
