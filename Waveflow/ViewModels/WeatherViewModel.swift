@@ -41,8 +41,6 @@ class WeatherViewModel: ObservableObject {
         }
     }
     
-    // MARK: - Load Cities from JSON
-    
     func loadCities() {
         guard let url = Bundle.main.url(
             forResource: "egypt_cities",
@@ -63,8 +61,6 @@ class WeatherViewModel: ObservableObject {
         }
     }
     
-    // MARK: - Fetch Default Location (Cairo)
-    
     func fetchDefaultLocation() {
         isLoading = true
         weatherService.fetchWeather(for: "Cairo") { [weak self] weatherData in
@@ -77,8 +73,6 @@ class WeatherViewModel: ObservableObject {
             self.isLoading = false
         }
     }
-    
-    // MARK: - Search Filtering
     
     func filterCities() {
         let query = searchQuery.trimmingCharacters(
@@ -94,8 +88,6 @@ class WeatherViewModel: ObservableObject {
             $0.name.lowercased().contains(query)
         }
     }
-    
-    // MARK: - Add Location
     
     func addLocation(city: CityEntry) {
         let alreadyExists = savedLocations.contains {
@@ -113,8 +105,6 @@ class WeatherViewModel: ObservableObject {
         }
     }
     
-    // MARK: - Remove Location
-    
     func removeLocation(at index: Int) {
         guard index > 0 && index < savedLocations.count else { return }
         
@@ -124,8 +114,6 @@ class WeatherViewModel: ObservableObject {
             selectedLocationIndex = savedLocations.count - 1
         }
     }
-    
-    // MARK: - Select Location
     
     func selectLocation(at index: Int) {
         if index >= 0 && index < savedLocations.count {

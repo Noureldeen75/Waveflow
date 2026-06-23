@@ -7,8 +7,6 @@
 
 import Foundation
 
-// MARK: - API Response Models
-
 struct APIWeatherResponse: Codable {
     let location: APILocation
     let current: APICurrent
@@ -58,8 +56,6 @@ struct APIHour: Codable {
     let condition: APICondition
 }
 
-// MARK: - App Display Models
-
 struct WeatherData: Identifiable {
     let id = UUID()
     let locationName: String
@@ -90,8 +86,6 @@ struct HourlyForecast: Identifiable {
     let conditionIconName: String
     let temp: Double
 }
-
-// MARK: - City Entry (for local JSON)
 
 struct CityEntry: Codable, Identifiable {
     var id: String { name }
