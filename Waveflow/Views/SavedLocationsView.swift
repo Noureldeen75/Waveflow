@@ -38,25 +38,10 @@ struct SavedLocationsView: View {
                                 viewModel.selectLocation(at: index)
                                 dismiss()
                             }) {
-                                HStack {
-                                    VStack(alignment: .leading) {
-                                        Text(location.locationName)
-                                            .font(.headline)
-                                            .foregroundColor(viewModel.textColor)
-                                        Text(location.conditionText)
-                                            .font(.subheadline)
-                                            .foregroundColor(
-                                                viewModel.textColor.opacity(0.7)
-                                            )
-                                    }
-                                    
-                                    Spacer()
-                                    
-                                    Text("\(Int(location.currentTemp))°")
-                                        .font(.title2)
-                                        .fontWeight(.bold)
-                                        .foregroundColor(viewModel.textColor)
-                                }
+                                SavedLocationRow(
+                                    location: location,
+                                    textColor: viewModel.textColor
+                                )
                             }
                             .listRowBackground(
                                 viewModel.textColor == .black
