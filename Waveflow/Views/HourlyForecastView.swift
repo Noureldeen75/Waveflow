@@ -22,24 +22,10 @@ struct HourlyForecastView: View {
             
             VStack {
                 List(hourlyForecasts) { hour in
-                    HStack {
-                        Text(hour.time)
-                            .font(.headline)
-                            .foregroundColor(textColor)
-                        
-                        Spacer()
-                        
-                        Image(systemName: hour.conditionIconName)
-                            .font(.title2)
-                            .foregroundColor(textColor)
-                        
-                        Spacer()
-                        
-                        Text("\(Int(hour.temp))°")
-                            .font(.title2)
-                            .fontWeight(.semibold)
-                            .foregroundColor(textColor)
-                    }
+                    HourlyForecastRow(
+                        hour: hour,
+                        textColor: textColor
+                    )
                     .padding(.vertical, 8)
                     .listRowBackground(Color.clear)
                 }
