@@ -28,37 +28,13 @@ struct SavedLocationsView: View {
                         .padding(.horizontal)
                         .padding(.top, 10)
                     
-                    List {
-                        ForEach(
-                            0..<viewModel.savedLocations.count,
-                            id: \.self
-                        ) { index in
-                            let location = viewModel.savedLocations[index]
-                            Button(action: {
-                                viewModel.selectLocation(at: index)
-                                dismiss()
-                            }) {
-                                SavedLocationRow(
-                                    location: location,
-                                    textColor: viewModel.textColor
-                                )
-                            }
-                            .listRowBackground(
-                                viewModel.textColor == .black
-                                ? Color.white.opacity(0.2)
-                                : Color.black.opacity(0.3)
-                            )
+                    SavedLocationsListView(
+                        viewModel: viewModel,
+                        onSelect: { index in
+                            viewModel.selectLocation(at: index)
+                            dismiss()
                         }
-                        .onDelete { indexSet in
-                            for index in indexSet {
-                                if index > 0 {
-                                    viewModel.removeLocation(at: index)
-                                }
-                            }
-                        }
-                    }
-                    .listStyle(PlainListStyle())
-                    .background(Color.clear)
+                    )
                 }
             }
             .navigationTitle("Weather")

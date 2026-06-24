@@ -20,42 +20,22 @@ struct SearchLocationsView: View {
                     .ignoresSafeArea()
                 
                 VStack {
-                    HStack {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundColor(viewModel.textColor.opacity(0.6))
-                        
-                        TextField(
-                            "Search Countries",
-                            text: $viewModel.searchQuery
-                        )
-                        .foregroundColor(viewModel.textColor)
-                        .onChange(of: viewModel.searchQuery) { _ in
+                    SearchInputBar(
+                        searchQuery: $viewModel.searchQuery,
+                        textColor: viewModel.textColor,
+                        onQueryChanged: {
                             viewModel.filterCountries()
                         }
-                    }
-                    .padding(10)
-                    .background(viewModel.textColor == .black ? Color.white.opacity(0.2) : Color.black.opacity(0.3))
-                    .cornerRadius(10)
-                    .padding(.horizontal)
-                    .padding(.top, 10)
+                    )
                     
-                    List {
-                        ForEach(viewModel.filteredCountries) { country in
-                            Button(action: {
-                                viewModel.addLocation(country: country)
-                                viewModel.searchQuery = ""
-                                dismiss()
-                            }) {
-                                SearchCountryRow(
-                                    countryName: country.name,
-                                    textColor: viewModel.textColor
-                                )
-                            }
-                            .listRowBackground(viewModel.textColor == .black ? Color.white.opacity(0.2) : Color.black.opacity(0.3))
+                    SearchResultsListView(
+                        viewModel: viewModel,
+                        onSelect: { country in
+                            viewModel.addLocation(country: country)
+                            viewModel.searchQuery = ""
+                            dismiss()
                         }
-                    }
-                    .listStyle(PlainListStyle())
-                    .background(Color.clear)
+                    )
                 }
             }
             .navigationTitle("Search Countries")
