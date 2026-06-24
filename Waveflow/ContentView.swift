@@ -43,11 +43,15 @@ struct ContentView: View {
                     .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
                     .ignoresSafeArea()
                 }
+                
+                NavigationLink(
+                    destination: SavedLocationsView(viewModel: viewModel),
+                    isActive: $isShowingSavedLocations
+                ) {
+                    EmptyView()
+                }
             }
             .navigationBarHidden(true)
-            .sheet(isPresented: $isShowingSavedLocations) {
-                SavedLocationsView(viewModel: viewModel)
-            }
         }
     }
 }
