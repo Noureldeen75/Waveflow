@@ -16,7 +16,7 @@ protocol WeatherServiceProtocol {
 
 class WeatherService: WeatherServiceProtocol {
     private let apiKey = "afad2da22c6947078c7131923262306"
-    private let baseURL = "http://api.weatherapi.com/v1/forecast.json"
+    private let baseURL = "https://api.weatherapi.com/v1/forecast.json"
     
     func fetchWeather(
         for query: String,
