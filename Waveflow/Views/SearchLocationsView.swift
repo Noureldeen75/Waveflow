@@ -46,14 +46,10 @@ struct SearchLocationsView: View {
                                 viewModel.searchQuery = ""
                                 dismiss()
                             }) {
-                                HStack {
-                                    Text(country.name)
-                                        .font(.headline)
-                                        .foregroundColor(viewModel.textColor)
-                                    Spacer()
-                                    Image(systemName: "plus.circle.fill")
-                                        .foregroundColor(viewModel.textColor)
-                                }
+                                SearchCountryRow(
+                                    countryName: country.name,
+                                    textColor: viewModel.textColor
+                                )
                             }
                             .listRowBackground(viewModel.textColor == .black ? Color.white.opacity(0.2) : Color.black.opacity(0.3))
                         }
