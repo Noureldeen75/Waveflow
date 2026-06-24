@@ -12,46 +12,35 @@ struct SearchLocationsView: View {
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
-        NavigationView {
-            ZStack {
-                Image(viewModel.backgroundImageName)
-                    .resizable()
-                    .scaledToFill()
-                    .ignoresSafeArea()
+        ZStack {
+            Image(viewModel.backgroundImageName)
+                .resizable()
+                .scaledToFill()
+                .ignoresSafeArea()
+            
+            VStack {
+                SearchInputBar(
+                    searchQuery: $viewModel.searchQuery,
+                    textColor: viewModel.textColor,
+                    onQueryChanged: {
+                        viewModel.filterCountries()
+                    }
+                )
                 
-                VStack {
-                    SearchInputBar(
-                        searchQuery: $viewModel.searchQuery,
-                        textColor: viewModel.textColor,
-                        onQueryChanged: {
-                            viewModel.filterCountries()
-                        }
-                    )
-                    
-                    SearchResultsListView(
-                        viewModel: viewModel,
-                        onSelect: { country in
-                            viewModel.addLocation(country: country)
-                            viewModel.searchQuery = ""
-                            dismiss()
-                        }
-                    )
-                }
-            }
-            .navigationTitle("Search Countries")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
+                SearchResultsListView(
+                    viewModel: viewModel,
+                    onSelect: { country in
+                        viewModel.addLocation(country: country)
                         viewModel.searchQuery = ""
                         dismiss()
                     }
-                    .foregroundColor(viewModel.textColor)
-                }
+                )
             }
-            .onAppear {
-                viewModel.filterCountries()
-            }
+        }
+        .navigationTitle("Search Countries")
+        .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            viewModel.filterCountries()
         }
     }
 }

@@ -36,6 +36,13 @@ struct SavedLocationsView: View {
                         }
                     )
                 }
+                
+                NavigationLink(
+                    destination: SearchLocationsView(viewModel: viewModel),
+                    isActive: $isShowingSearch
+                ) {
+                    EmptyView()
+                }
             }
             .navigationTitle("Weather")
             .navigationBarTitleDisplayMode(.inline)
@@ -54,9 +61,6 @@ struct SavedLocationsView: View {
                             .foregroundColor(viewModel.textColor)
                     }
                 }
-            }
-            .sheet(isPresented: $isShowingSearch) {
-                SearchLocationsView(viewModel: viewModel)
             }
         }
     }
