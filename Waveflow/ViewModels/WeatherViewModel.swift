@@ -6,7 +6,9 @@
 //
 
 import SwiftUI
+import SwiftData
 
+@MainActor
 class WeatherViewModel: ObservableObject {
     @Published var savedLocations: [WeatherData] = []
     @Published var selectedLocationIndex: Int = 0
@@ -16,11 +18,25 @@ class WeatherViewModel: ObservableObject {
     @Published var allCountries: [CountryEntry] = []
     
     private let weatherService: WeatherServiceProtocol
+    private var container: ModelContainer?
+    private var context: ModelContext?
     
     init(weatherService: WeatherServiceProtocol) {
         self.weatherService = weatherService
+        setupSwiftData()
         loadCountries()
-        fetchDefaultLocation()
+        fetchSavedLocations()
+    }
+    
+    private func setupSwiftData() {
+        do {
+            container = try ModelContainer(for: SavedLocationEntity.self)
+            if let container = container {
+                context = ModelContext(container)
+            }
+        } catch {
+            print("Failed to initialize SwiftData: \(error)")
+        }
     }
     
     var backgroundImageName: String {
@@ -61,8 +77,64 @@ class WeatherViewModel: ObservableObject {
         }
     }
     
-    func fetchDefaultLocation() {
+    func fetchSavedLocations() {
         isLoading = true
+        
+        guard let context = context else {
+            fetchDefaultLocation()
+            return
+        }
+        
+        let descriptor = FetchDescriptor<SavedLocationEntity>()
+        do {
+            var entities = try context.fetch(descriptor)
+            
+            if entities.isEmpty {
+                let defaultEntity = SavedLocationEntity(name: "Egypt", query: "Cairo")
+                context.insert(defaultEntity)
+                try? context.save()
+                entities = [defaultEntity]
+            }
+            
+            let group = DispatchGroup()
+            var fetchedData: [String: WeatherData] = [:]
+            
+            for entity in entities {
+                group.enter()
+                weatherService.fetchWeather(for: entity.query) { weatherData in
+                    if let weatherData = weatherData {
+                        fetchedData[entity.name] = weatherData
+                    }
+                    group.leave()
+                }
+            }
+            
+            group.notify(queue: .main) { [weak self] in
+                guard let self = self else { return }
+                
+                var orderedLocations: [WeatherData] = []
+                for entity in entities {
+                    if let data = fetchedData[entity.name] {
+                        orderedLocations.append(data)
+                    }
+                }
+                
+                if orderedLocations.isEmpty {
+                    self.fetchDefaultLocation()
+                } else {
+                    self.savedLocations = orderedLocations
+                    self.selectedLocationIndex = 0
+                    self.isLoading = false
+                }
+            }
+            
+        } catch {
+            print("Fetch error: \(error)")
+            fetchDefaultLocation()
+        }
+    }
+    
+    private func fetchDefaultLocation() {
         weatherService.fetchWeather(for: "Cairo") { [weak self] weatherData in
             guard let self = self, let weatherData = weatherData else {
                 self?.isLoading = false
@@ -96,6 +168,12 @@ class WeatherViewModel: ObservableObject {
         
         guard !alreadyExists else { return }
         
+        if let context = context {
+            let entity = SavedLocationEntity(name: country.name, query: country.query)
+            context.insert(entity)
+            try? context.save()
+        }
+        
         weatherService.fetchWeather(for: country.query) { [weak self] weatherData in
             guard let self = self, let weatherData = weatherData else {
                 return
@@ -107,6 +185,18 @@ class WeatherViewModel: ObservableObject {
     
     func removeLocation(at index: Int) {
         guard index > 0 && index < savedLocations.count else { return }
+        
+        let locationToRemove = savedLocations[index]
+        
+        if let context = context {
+            let descriptor = FetchDescriptor<SavedLocationEntity>()
+            if let entities = try? context.fetch(descriptor) {
+                if let entityToDelete = entities.first(where: { $0.name.lowercased() == locationToRemove.locationName.lowercased() }) {
+                    context.delete(entityToDelete)
+                    try? context.save()
+                }
+            }
+        }
         
         savedLocations.remove(at: index)
         

@@ -9,7 +9,7 @@ import SwiftUI
 
 @main
 struct WaveflowApp: App {
-    private let viewModel = WeatherViewModel(
+    @StateObject private var viewModel = WeatherViewModel(
         weatherService: WeatherService()
     )
     

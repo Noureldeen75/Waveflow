@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftData
 
 struct APIWeatherResponse: Codable {
     let location: APILocation
@@ -91,4 +92,15 @@ struct CountryEntry: Codable, Identifiable {
     var id: String { name }
     let name: String
     let query: String
+}
+
+@Model
+final class SavedLocationEntity {
+    @Attribute(.unique) var name: String
+    var query: String
+    
+    init(name: String, query: String) {
+        self.name = name
+        self.query = query
+    }
 }
